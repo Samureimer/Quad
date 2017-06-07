@@ -3,23 +3,24 @@
 #include "nRF24L01.h"
 #include "RF24.h"
 #include "printf.h"
+#include "Structs.h"
 
 #define DoDebug
 
-struct Command
-{
-	float Roll, Pitch, Power;
-	bool DoSendStatusreport;
-};
-
-struct Status
-{
-	//float ActualRoll, ActualPitch;
-	float MotorFR, MotorFL, MotorRR, MotorRL;
-	float Power, PowerPitch, PowerRoll;
-	//float BatteryLimitationFactor;
-	float BatteryVoltage;
-};
+//struct Command
+//{
+//	float Roll, Pitch, Power;
+//	bool DoSendStatusreport;
+//};
+//
+//struct Status
+//{
+//	//float ActualRoll, ActualPitch;
+//	float MotorFR, MotorFL, MotorRR, MotorRL;
+//	float Power, PowerPitch, PowerRoll;
+//	//float BatteryLimitationFactor;
+//	float BatteryVoltage;
+//};
 
 
 Command CurrentCommand;

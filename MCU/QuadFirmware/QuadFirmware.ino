@@ -4,6 +4,7 @@
 #include <nRF24L01-STM.h>
 #include <RF24-STM.h>
 #include "MotorPid.h"
+#include "Structs.h"
 #include <I2Cdev.h>
 #include <MPU6050_6Axis_MotionApps20.h>
 #include <Wire.h>
@@ -22,20 +23,20 @@
 #define BatteryPin PA1
 #define TransmitTimeout 75
 
-struct Command
-{
-	float Roll, Pitch, Power;
-	bool DoSendStatusreport;
-};
-
-struct Status
-{
-	//float ActualRoll, ActualPitch;
-	float MotorFR, MotorFL, MotorRR, MotorRL;
-	float Power, PowerPitch, PowerRoll;
-	//float BatteryLimitationFactor;
-	float BatteryVoltage;
-};
+//struct Command
+//{
+//	float Roll, Pitch, Power;
+//	bool DoSendStatusreport;
+//};
+//
+//struct Status
+//{
+//	//float ActualRoll, ActualPitch;
+//	float MotorFR, MotorFL, MotorRR, MotorRL;
+//	float Power, PowerPitch, PowerRoll;
+//	//float BatteryLimitationFactor;
+//	float BatteryVoltage;
+//};
 
 MPU6050 mpu;
 MotorPID RollPid;
@@ -367,8 +368,8 @@ void ProcessReceiver() {
 	{
 		UpdateCurrentStatus();
 		//CurrentCommand.DoSendStatusreport = !Transmit(&CurrentStatus, sizeof(Status));
-		 TransmitAsync(&CurrentStatus, sizeof(Status));
-		 CurrentCommand.DoSendStatusreport = false;
+		TransmitAsync(&CurrentStatus, sizeof(Status));
+		CurrentCommand.DoSendStatusreport = false;
 	}
 }
 
