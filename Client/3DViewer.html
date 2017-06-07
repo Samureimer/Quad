@@ -1,0 +1,441 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <title>three.js webgl - STL</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <style>
+        body {
+            font-family: Monospace;
+            background-color: #000000;
+            margin: 0px;
+            overflow: hidden;
+        }
+
+        #info {
+            color: #fff;
+            position: absolute;
+            top: 10px;
+            width: 100%;
+            text-align: center;
+            z-index: 100;
+            display: block;
+        }
+
+        a {
+            color: skyblue;
+        }
+
+        .button {
+            background: #999;
+            color: #eee;
+            padding: 0.2em 0.5em;
+            cursor: pointer;
+        }
+
+        .highlight {
+            background: orange;
+            color: #fff;
+        }
+
+        span {
+            display: inline-block;
+            width: 60px;
+            float: left;
+            text-align: center;
+        }
+
+        .progress .bar {
+            -webkit-transition: none;
+            -moz-transition: none;
+            -ms-transition: none;
+            -o-transition: none;
+            transition: none;
+        }
+    </style>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="circle.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <div class="col-xs-10" id="Canvas">
+
+        </div>
+        <div class="col-xs-2" style="background-color: grey">
+            <div class="row">
+                <a class="label" id="Roll">Roll: Nan</a>
+            </div>
+            <div class="row">
+                <a class="label" id="Pitch">Pitch: Nan</a>
+            </div>
+            <div class="row">
+            </div>
+        </div>
+        <div class="col-xs-12" style="background-color: grey">
+
+            <div class="col-xs-6" style="background-color: grey">
+                <a class="label">Throttle 1</a>
+                <a class="label" id="Throttle1_lbl">Nan %</a>
+                <div class="progress">
+                    <div class="progress-bar bar" role="progressbar" id="Throttle1" aria-valuemin="0" aria-valuemax="100" style="width:0%">
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xs-6" style="background-color: grey">
+                <a class="label">Throttle 2</a>
+                <a class="label" id="Throttle2_lbl">Nan %</a>
+                <div class="progress">
+                    <div class="progress-bar bar" role="progressbar" id="Throttle2" aria-valuemin="0" aria-valuemax="100" style="width:0%">
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="col-xs-6" style="background-color: grey">
+                <a class="label">Throttle 3</a>
+                <a class="label" id="Throttle3_lbl">Nan %</a>
+                <div class="progress">
+                    <div class="progress-bar bar" role="progressbar" id="Throttle3" aria-valuemin="0" aria-valuemax="100" style="width:0%">
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="col-xs-6" style="background-color: grey">
+                <a class="label">Throttle 4</a>
+                <a class="label" id="Throttle4_lbl">Nan %</a>
+                <div class="progress">
+                    <div class="progress-bar bar" role="progressbar" id="Throttle4" aria-valuemin="0" aria-valuemax="100" style="width:0%">
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="col-xs-12" style="background-color: grey">
+                <a class="label">Throttle All</a>
+                <a class="label" id="ThrottleAll_lbl">Nan %</a>
+                <div class="progress">
+                    <div class="progress-bar bar" role="progressbar" id="ThrottleAll" aria-valuemin="0" aria-valuemax="100" style="width:0%">
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xs-6" style="background-color: grey">
+                <a class="label">Power Pitch</a>
+                <a class="label" id="PowerPitch_lbl">Nan %</a>
+                <div class="progress">
+                    <div class="progress-bar bar" role="progressbar" id="PowerPitch" aria-valuemin="0" aria-valuemax="100" style="width:0%">
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="col-xs-6" style="background-color: grey">
+                <a class="label">Power Roll</a>
+                <a class="label" id="PowerRoll_lbl">Nan %</a>
+                <div class="progress">
+                    <div class="progress-bar bar" role="progressbar" id="PowerRoll" aria-valuemin="0" aria-valuemax="100" style="width:0%">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xs-12" style="background-color: grey">
+            <input type="button" class="btn btn-default" value="Set command" onclick="setCommand();" />
+        </div>
+        <div class="col-xs-12" style="background-color: grey">
+            <input type="text" id="txt_power" />
+        </div>
+        <div class="col-xs-12" style="background-color: grey">
+            <a class="label" id="DEBUG_TXT" />
+        </div>
+    </div>
+    <script src="js/three.js"></script>
+
+    <script src="js/STLLoader.js"></script>
+
+    <script src="js/Detector.js"></script>
+    <script src="js/stats.min.js"></script>
+
+    <script>
+        if (!Detector.webgl) Detector.addGetWebGLMessage();
+
+        var container, stats;
+
+        var camera, cameraTarget, scene, renderer;
+
+        var model;
+
+        var readyForNewData = true;
+
+        init();
+        animate();
+
+        function init() {
+            model = new THREE.Object3D();
+            container = document.createElement('div');
+            document.getElementById('Canvas').appendChild(container);
+
+            camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 1, 15);
+            camera.position.set(-5, 1, 0);
+
+            cameraTarget = new THREE.Vector3(0, 0, 0);
+
+            scene = new THREE.Scene();
+            scene.fog = new THREE.Fog(0x72645b, 2, 15);
+
+
+            // Ground
+
+            var plane = new THREE.Mesh(
+                new THREE.PlaneBufferGeometry(40, 40),
+                new THREE.MeshPhongMaterial({ color: 0x999999, specular: 0x101010 })
+            );
+            plane.rotation.x = -Math.PI / 2;
+            plane.position.y = -0.5;
+            scene.add(plane);
+
+            plane.receiveShadow = true;
+
+            // Binary files
+
+            var loader = new THREE.STLLoader();
+            var material = new THREE.MeshPhongMaterial({ color: 0xAAAAAA, specular: 0x111111, shininess: 200 });
+
+            loader.load('./Models/samolot.stl', function (geometry) {
+
+                var mesh = new THREE.Mesh(geometry, material);
+
+
+                mesh.scale.set(0.1, 0.1, 0.1);
+
+                var box = new THREE.Box3().setFromObject(mesh);
+                var vec = box.getSize();
+
+                mesh.position.set(0 - vec.x / 2, vec.y / 4, 0);
+                mesh.rotation.set(0, 0, 0);
+
+                mesh.castShadow = true;
+                mesh.receiveShadow = true;
+                model.add(mesh);
+                scene.add(model);
+            });
+
+            // Lights
+
+            scene.add(new THREE.HemisphereLight(0x443333, 0x111122));
+
+            addShadowedLight(1, 1, 1, 0xffffff, 1.35);
+            addShadowedLight(0.5, 1, -1, 0xffaa00, 1);
+            // renderer
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setClearColor(scene.fog.color);
+            renderer.setPixelRatio(16 / 9);
+            renderer.setSize(document.getElementById('Canvas').clientWidth - 20, document.getElementById('Canvas').clientWidth / (16.0 / 9.0));
+
+            renderer.gammaInput = true;
+            renderer.gammaOutput = true;
+
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.renderReverseSided = false;
+
+            container.appendChild(renderer.domElement);
+
+            // stats
+
+            stats = new Stats();
+            container.appendChild(stats.dom);
+
+            //
+
+            window.addEventListener('resize', onWindowResize, false);
+
+        }
+
+        function addShadowedLight(x, y, z, color, intensity) {
+            var directionalLight = new THREE.DirectionalLight(color, intensity);
+            directionalLight.position.set(x, y, z);
+            scene.add(directionalLight);
+
+            directionalLight.castShadow = true;
+
+            var d = 1;
+            directionalLight.shadow.camera.left = -d;
+            directionalLight.shadow.camera.right = d;
+            directionalLight.shadow.camera.top = d;
+            directionalLight.shadow.camera.bottom = -d;
+
+            directionalLight.shadow.camera.near = 1;
+            directionalLight.shadow.camera.far = 4;
+
+            directionalLight.shadow.mapSize.width = 1024;
+            directionalLight.shadow.mapSize.height = 1024;
+
+            directionalLight.shadow.bias = -0.005;
+        }
+
+        function onWindowResize() {
+
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+
+            renderer.setSize(document.getElementById('Canvas').clientWidth - 20, document.getElementById('Canvas').clientWidth / (16.0 / 9.0));
+
+        }
+
+        function animate() {
+
+            requestAnimationFrame(animate);
+
+            render();
+            stats.update();
+
+        }
+
+        function render() {
+            if (readyForNewData)
+                getData();
+
+            camera.lookAt(cameraTarget);
+            renderer.render(scene, camera);
+        }
+
+        var dataZ = [0];
+        var dataY = [0];
+
+        var DoOffsetCalc = true;
+        var OffsetsCalculated = 0;
+        var OffsetsCalculationsToDo = 10;
+        var debugText = "DEBUG";
+        var RollOffset = 0;
+        var PitchOffset = 0;
+
+        var Power = 0;
+        var PowerPitch = 0;
+        var PowerRoll = 0;
+
+        var Motor1 = 0;
+        var Motor2 = 0;
+        var Motor3 = 0;
+        var Motor4 = 0;
+
+        function setCommand() {
+            var power = $("#txt_power").val();
+            var req = $.get("http://localhost:9123/Api/Test/SetCommand?power=" + power, function (data, status) {
+
+            });
+        }
+
+        function getData() {
+            readyForNewData = false;
+            var req = $.get("http://localhost:9123/Api/Test/GetStatus", function (data, status) {
+
+                if (DoOffsetCalc) {
+                    if (OffsetsCalculated < OffsetsCalculationsToDo) {
+                        dataZ.push(data.ActualRoll);
+                        dataY.push(data.ActualPitch);
+                        OffsetsCalculated++;
+                    }
+                    else {
+                        var sumZ = dataZ.reduce(function (a, b) { return a + b; });
+                        var avgZ = sumZ / dataZ.length;
+                        RollOffset = avgZ;
+
+                        var sumY = dataY.reduce(function (a, b) { return a + b; });
+                        var avgY = sumY / dataY.length;
+                        PitchOffset = avgY;
+                        dataZ = [0];
+                        dataY = [0];
+                        DoOffsetCalc = false;
+                    }
+                }
+                else {
+                    dataZ.push(data.ActualRoll);
+                    dataY.push(data.ActualPitch);
+
+                    if (dataZ.length > 5)
+                        dataZ.splice(0, 1);
+
+                    if (dataY.length > 5)
+                        dataY.splice(0, 1);
+
+                    var sumZ = dataZ.reduce(function (a, b) { return a + b; });
+                    var avgZ = sumZ / dataZ.length - RollOffset;
+                    Roll = avgZ;
+
+                    var sumY = dataY.reduce(function (a, b) { return a + b; });
+                    var avgY = sumY / dataY.length - PitchOffset;
+                    Pitch = avgY;
+
+                    /*
+                        Get the PID Pitch/Roll correction
+                    */
+
+                    Power = data.Power;
+                    PowerPitch = data.PowerPitch;
+                    PowerRoll = data.PowerRoll;
+                    Motor1 = data.MotorFL;
+                    Motor2 = data.MotorFR;
+                    Motor3 = data.MotorRL;
+                    Motor4 = data.MotorRR;
+                    debugText = data.MotorFL + data.MotorFR + data.MotorRL + data.MotorRR;
+
+                    /*
+
+                      ^
+                    1 | 2
+                    O	O
+                     \ /
+                     / \
+                    O   O
+                    3   4
+
+                    */
+                }
+
+                UpdateUI();
+                model.rotation.set(-avgZ / 180.0 * Math.PI, 0, -avgY / 180.0 * Math.PI);
+                readyForNewData = true;
+            });
+            req.fail(function () {
+                readyForNewData = true;
+            });
+        }
+
+        function UpdateUI() {
+            document.getElementById("Roll").innerHTML = "Roll: " + Roll;
+            document.getElementById("Pitch").innerHTML = "Pitch: " + Pitch;
+            document.getElementById("DEBUG_TXT").innerHTML = debugText;
+
+
+            document.getElementById("Throttle1_lbl").innerHTML = Motor1 + " %";
+            document.getElementById("Throttle1").style.width = Motor1 / 2.55 + "%";
+
+            document.getElementById("Throttle2_lbl").innerHTML = Motor2 + " %";
+            document.getElementById("Throttle2").style.width = Motor2 / 2.55 + "%";
+
+            document.getElementById("Throttle3_lbl").innerHTML = Motor3 + " %";
+            document.getElementById("Throttle3").style.width = Motor3 / 2.55 + "%";
+
+            document.getElementById("Throttle4_lbl").innerHTML = Motor4 + " %";
+            document.getElementById("Throttle4").style.width = Motor4 / 2.55 + "%";
+
+            document.getElementById("PowerPitch_lbl").innerHTML = PowerPitch + " %";
+            document.getElementById("PowerPitch").style.width = PowerPitch / 2.55 + "%";
+
+            document.getElementById("PowerRoll_lbl").innerHTML = PowerRoll + " %";
+            document.getElementById("PowerRoll").style.width = PowerRoll / 2.55 + "%";
+
+            document.getElementById("ThrottleAll_lbl").innerHTML = Power + " %";
+            document.getElementById("ThrottleAll").style.width = Power / 2.55 + "%";
+        }
+    </script>
+</body>
+
+</html>

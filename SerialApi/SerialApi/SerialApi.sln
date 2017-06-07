@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SerialApi", "SerialApi\SerialApi.csproj", "{C58C9720-F4FC-47E2-9281-314B78C2E704}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalRHost", "SignalRHost\SignalRHost.csproj", "{98D030E8-194D-45C7-B326-2308B14B6D88}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C58C9720-F4FC-47E2-9281-314B78C2E704}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C58C9720-F4FC-47E2-9281-314B78C2E704}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C58C9720-F4FC-47E2-9281-314B78C2E704}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C58C9720-F4FC-47E2-9281-314B78C2E704}.Release|Any CPU.Build.0 = Release|Any CPU
+		{98D030E8-194D-45C7-B326-2308B14B6D88}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{98D030E8-194D-45C7-B326-2308B14B6D88}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{98D030E8-194D-45C7-B326-2308B14B6D88}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{98D030E8-194D-45C7-B326-2308B14B6D88}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
