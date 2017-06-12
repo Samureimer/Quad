@@ -5,6 +5,8 @@
 #include "printf.h"
 #include "Structs.h"
 
+//#pragma pack(2)
+
 #define DoDebug
 
 //struct Command
@@ -24,7 +26,6 @@
 
 
 Command CurrentCommand;
-Status LatestStatus;
 
 RF24 radio(11, 12);
 const uint64_t WritingPipe = 0xA8A8E1F0C6LL;
@@ -40,6 +41,7 @@ void setup(void)
 
 #pragma region Radio setup
 	radio.begin();
+	//radio.enableDynamicPayloads();
 	//Receiver.enableAckPayload();
 	radio.setDataRate(RF24_250KBPS);
 	radio.setChannel(70);
@@ -60,38 +62,71 @@ void loop(void)
 	Transmit(&CurrentCommand, sizeof(Command));
 	if (radio.available(&ReadPipeNr))
 	{
-		radio.read(&LatestStatus, sizeof(Status));
-		//Serial.print("Pitch");
-		//Serial.print("\t");
-		//Serial.print("Roll");
-		//Serial.print("\t");
-		Serial.print("FL");
-		Serial.print("\t");
-		Serial.print("FR");
-		Serial.print("\t");
-		Serial.print("RL");
-		Serial.print("\t");
-		Serial.print("RR");
-		Serial.print("\t");
-		//Serial.print("Bat");
-		//Serial.print("\t");
-		Serial.println("BatV");
+		byte buff[32];
 
-		//Serial.print(LatestStatus.ActualPitch);
-		//Serial.print("\t");
-		//Serial.print(LatestStatus.ActualRoll);
-		//Serial.print("\t");
-		Serial.print(LatestStatus.MotorFL);
-		Serial.print("\t");
-		Serial.print(LatestStatus.MotorFR);
-		Serial.print("\t");
-		Serial.print(LatestStatus.MotorRL);
-		Serial.print("\t");
-		Serial.print(LatestStatus.MotorRR);
-		Serial.print("\t");
-		//Serial.print(LatestStatus.BatteryLimitationFactor);
-		//Serial.print("\t");
-		Serial.println(LatestStatus.BatteryVoltage);
+		radio.read(buff, sizeof(buff));
+		//for (size_t i = 0; i < sizeof(buff); i++)
+		//{
+		//	Serial.print(buff[i], DEC);
+		//	Serial.print(" ");
+		//}
+		//Serial.println("");
+
+
+		//byte status = 3;
+		//radio.read(&status, 1);
+		//Serial.println(status);
+		switch (buff[0])
+		{
+		case Motor:
+		{
+			MotorStatus motor;
+		}
+		break;
+		case AngleAndCorrection:
+		{
+			AngleAndCorrectionStatus angleAndCorrection;
+		}
+		break;
+		case Battery:
+		{
+			//byte buff[20];
+			//for (size_t i = 0; i < sizeof(buff); i++)
+			//{
+			//	buff[i] = 0;
+			//}
+
+			//radio.read(&buff, sizeof(batteryStatus) - 1);
+			//for (size_t i = 0; i < sizeof(buff); i++)
+			//{
+			//	Serial.print(buff[i], DEC);
+			//	Serial.print(" ");
+			//}
+			//Serial.println("");
+			//Serial.println((uint16_t)&batteryStatus);
+			//Serial.println((uint16_t)((&batteryStatus) + 1));
+			//byte* ptr = reinterpret_cast<byte*>(&batteryStatus);
+
+			//memcpy(ptr, &buff, sizeof(batteryStatus));
+			//memcpy(&batteryStatus.type, &buff, 1);
+			//memcpy(&batteryStatus.BatteryLimitationFactor, &buff + 1, 4);
+			//memcpy(&batteryStatus.BatteryVoltage, &buff + 1 + 4, 4);
+
+			BatteryStatus *batteryStatus;
+			batteryStatus = (BatteryStatus*)buff;
+
+			Serial.print("Voltage: ");
+			Serial.println(batteryStatus->BatteryVoltage);
+			Serial.println(batteryStatus->BatteryLimitationFactor);
+			for (size_t i = 0; i < sizeof(BatteryStatus); i++)
+			{
+				Serial.print((((uint8_t*)&batteryStatus)[i]));
+				Serial.print(' ');
+			}
+			Serial.println();
+		}
+		break;
+		}
 	}
 	delay(500);
 }
@@ -102,7 +137,7 @@ void UpdateCommand()
 	CurrentCommand.Power = 50.0;
 	CurrentCommand.Pitch = 0.0;
 	CurrentCommand.Roll = 0.0;
-	CurrentCommand.DoSendStatusreport = true;
+	CurrentCommand.StatusToSend = Battery;
 }
 
 bool res;

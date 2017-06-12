@@ -16,27 +16,13 @@
 #define ReadPipeNr 1
 #define CE PC14
 #define CS PC15
-#define MotorFRPin PB1
-#define MotorFLPin PA9
-#define MotorRRPin PA10
-#define MotorRLPin PB0
+#define MotorFRPin PA10
+#define MotorFLPin PB0
+#define MotorRRPin PA9
+#define MotorRLPin PB1
 #define BatteryPin PA1
 #define TransmitTimeout 75
 
-//struct Command
-//{
-//	float Roll, Pitch, Power;
-//	bool DoSendStatusreport;
-//};
-//
-//struct Status
-//{
-//	//float ActualRoll, ActualPitch;
-//	float MotorFR, MotorFL, MotorRR, MotorRL;
-//	float Power, PowerPitch, PowerRoll;
-//	//float BatteryLimitationFactor;
-//	float BatteryVoltage;
-//};
 
 MPU6050 mpu;
 MotorPID RollPid;
@@ -46,7 +32,6 @@ RF24 Receiver(CE, CS);
 const uint64_t ReadingPipe = 0xA8A8E1F0C6LL;
 const uint64_t WritingPipe = 0xA8A8E1F0D7LL;
 Command CurrentCommand;
-Status CurrentStatus;
 
 // MPU control/status vars
 bool dmpReady = false;  // set true if DMP init was successful
@@ -86,7 +71,7 @@ void dmpDataReady() {
 }
 
 void setup() {
-	CurrentCommand.Power = 80;
+	//CurrentCommand.Power = 80;
 
 	pinMode(LED_PIN, OUTPUT);
 	digitalWrite(LED_PIN, true);
@@ -178,26 +163,41 @@ float Roll, Pitch;
 float RollOffset, PitchOffset;
 void loop()
 {
+	Serial.println(CurrentCommand.Power);
+	Serial.print(BatteryVoltage);
+	Serial.println(" V");
+	PrintDebugInfo();
+
 	if (Serial.available() > 0)
 	{
-		char a = Serial.read();
+		CurrentCommand.Power = Serial.parseInt();
+		//char a = Serial.read();
+		//analogWrite(MotorFRPin, 255);
+		//analogWrite(MotorFLPin, 255);
+		//analogWrite(MotorRRPin, 255);
+		//analogWrite(MotorRLPin, 255);
 
-		switch (a)
-		{
-		case 'Q':
-			PrintDebugInfo();
-			break;
-		case 'C':
-			while (Serial.available())
-				char b = Serial.read();
-			Serial.print('K');
-			Serial.readBytes((uint8_t*)&CurrentCommand, sizeof(Command));
-			break;
-		default:
-			break;
-		}
+		//switch (a)
+		//{
+		//case 'P':
+		//	CurrentCommand.Power = Serial.parseInt();
+		//	break;
+		//case '1':
+		//	analogWrite(MotorFRPin, 255 - CurrentCommand.Power);
+		//	break;
+		//case '2':
+		//	analogWrite(MotorFLPin, 255 - CurrentCommand.Power);
+		//	break;
+		//case '3':
+		//	analogWrite(MotorRRPin, 255 - CurrentCommand.Power);
+		//	break;
+		//case '4':
+		//	analogWrite(MotorRLPin, 255 - CurrentCommand.Power);
+		//	break;
+		//default:
+		//	break;
+		//}
 	}
-
 
 	if (mpuInterrupt || fifoCount > packetSize)
 	{
@@ -262,10 +262,16 @@ void ProcessMotorPower()
 	//MotorRR = MotorRR > 255.0 ? 255.0 : MotorRR;
 	//MotorRR = MotorRR < 0.0 ? 0.0 : MotorRR;
 
-	analogWrite(MotorFRPin, MotorFL);
-	analogWrite(MotorFLPin, MotorFR);
-	analogWrite(MotorRRPin, MotorRL);
-	analogWrite(MotorRLPin, MotorRR);
+	analogWrite(MotorFRPin, 255 - MotorFL);
+	analogWrite(MotorFLPin, 255 - MotorFR);
+	analogWrite(MotorRRPin, 255 - MotorRL);
+	analogWrite(MotorRLPin, 255 - MotorRR);
+
+	//Serial.println(255 - CurrentCommand.Power);
+	//analogWrite(MotorFRPin, 255 - CurrentCommand.Power);
+	//analogWrite(MotorFLPin, 255 - CurrentCommand.Power);
+	//analogWrite(MotorRRPin, 255 - CurrentCommand.Power);
+	//analogWrite(MotorRLPin, 255 - CurrentCommand.Power);
 }
 
 void ProcessOffsetCalculations()
@@ -325,6 +331,7 @@ void ProcessPID()
 		PowerPitch = -255;
 }
 
+BatteryStatus batteryStatus;
 void ProcessReceiver() {
 
 	uint8_t pipe;
@@ -364,13 +371,55 @@ void ProcessReceiver() {
 		}
 	}
 
-	if (CurrentCommand.DoSendStatusreport == true)
+
+	switch (CurrentCommand.StatusToSend)
 	{
-		UpdateCurrentStatus();
-		//CurrentCommand.DoSendStatusreport = !Transmit(&CurrentStatus, sizeof(Status));
-		TransmitAsync(&CurrentStatus, sizeof(Status));
-		CurrentCommand.DoSendStatusreport = false;
+	case Motor:
+	{
+		MotorStatus motor;
+		GenerateMotorStatus(&motor);
+		TransmitAsync(&motor, sizeof(MotorStatus));
 	}
+	break;
+	case AngleAndCorrection:
+	{
+		AngleAndCorrectionStatus angleAndCorrection;
+		GenerateAngleAndCorrectionStatus(&angleAndCorrection);
+		TransmitAsync(&angleAndCorrection, sizeof(AngleAndCorrectionStatus));
+	}
+	break;
+	case Battery:
+	{
+		GenerateBatteryStatus(&batteryStatus);
+		Serial.print("Voltage: ");
+		Serial.println(batteryStatus.BatteryVoltage);
+		TransmitAsync(&batteryStatus, sizeof(BatteryStatus));
+		sizeof(BatteryStatus);
+	}
+	break;
+	}
+	CurrentCommand.StatusToSend = None;
+}
+
+void GenerateAngleAndCorrectionStatus(AngleAndCorrectionStatus *status) {
+	status->Roll = Roll;
+	status->Pitch = Pitch;
+	status->PowerPitch = PowerPitch;
+	status->PowerRoll = PowerRoll;
+}
+
+void GenerateMotorStatus(MotorStatus *status) {
+	status->MotorFL = MotorFL;
+	status->MotorFR = MotorFR;
+	status->MotorRL = MotorRL;
+	status->MotorRR = MotorRR;
+	status->Power = CurrentCommand.Power;
+}
+
+void GenerateBatteryStatus(BatteryStatus *status) {
+	status->BatteryLimitationFactor = 123.0f;
+	status->BatteryVoltage = BatteryVoltage;
+	Serial.println(status->BatteryVoltage);
 }
 
 void ProcessMpuData() {
@@ -384,7 +433,6 @@ void ProcessMpuData() {
 	// check for overflow (this should never happen unless our code is too inefficient)
 	if ((mpuIntStatus & 0x10) || fifoCount == 1024) {
 		// reset so we can continue cleanly
-		Serial.println("Overflow!");
 		mpu.resetFIFO();
 	}
 	else if (mpuIntStatus & 0x02) {
@@ -400,43 +448,32 @@ void ProcessMpuData() {
 
 
 		//Pitch
-		Pitch = ypr[1] * 180.0f / M_PI;
+		Roll = ypr[1] * 180.0f / M_PI;
 		if (gravity.z <= 0 && gravity.x <= 0)
-			Pitch = -180 - Pitch;
-		else if (gravity.z <= 0)
-			Pitch = 180 - Pitch;
-
-		//Roll
-		Roll = ypr[2] * 180.0f / M_PI;
-		if (gravity.z <= 0 && gravity.y <= 0)
 			Roll = -180 - Roll;
 		else if (gravity.z <= 0)
 			Roll = 180 - Roll;
 
-		Roll -= RollOffset;
-		Pitch -= PitchOffset;
-	}
-}
+		//Roll
+		Pitch = ypr[2] * 180.0f / M_PI;
+		if (gravity.z <= 0 && gravity.y <= 0)
+			Pitch = -180 - Pitch;
+		else if (gravity.z <= 0)
+			Pitch = 180 - Pitch;
 
-void UpdateCurrentStatus()
-{
-	//CurrentStatus.ActualPitch = Pitch;
-	//CurrentStatus.ActualRoll = Roll;
-	CurrentStatus.MotorFL = MotorFL;
-	CurrentStatus.MotorFR = MotorFR;
-	CurrentStatus.MotorRL = MotorRL;
-	CurrentStatus.MotorRR = MotorRR;
-	CurrentStatus.Power = CurrentCommand.Power;
-	CurrentStatus.PowerPitch = PowerPitch;
-	CurrentStatus.PowerRoll = PowerRoll;
-	//CurrentStatus.BatteryLimitationFactor = BatteryLimitationFactor;
-	CurrentStatus.BatteryVoltage = BatteryVoltage;
+		Roll -= RollOffset;
+		Roll = -Roll;
+
+		Pitch -= PitchOffset;
+		Pitch = -Pitch;
+	}
 }
 
 bool Transmit(const void* buf, uint8_t len)
 {
 	Receiver.stopListening();
 	bool res = Receiver.write(buf, len);
+	Receiver.startListening();
 	return res;
 }
 
@@ -451,10 +488,23 @@ void TransmitAsync(const void* buf, uint8_t len)
 void PrintDebugInfo()
 {
 #ifdef DoDebug
-	UpdateCurrentStatus();
-	for (size_t i = 0; i < sizeof(Status); i++)
-	{
-		Serial.print(((char*)&CurrentStatus)[i]);
-	}
+	//BatteryStatus batState;
+	//GenerateBatteryStatus(&batState);
+	//Serial.print("Bat V: ");
+	//Serial.println(batState.BatteryVoltage);
+	//Serial.print("Bat lim: ");
+	//Serial.println(batState.BatteryLimitationFactor);
+
+	AngleAndCorrectionStatus AGStatus;
+	GenerateAngleAndCorrectionStatus(&AGStatus);
+	Serial.print("Roll: ");
+	Serial.print(AGStatus.Roll);
+	Serial.print("\tPitch: ");
+	Serial.print(AGStatus.Pitch);
+	Serial.print("\tPower Roll: ");
+	Serial.print(AGStatus.PowerRoll);
+	Serial.print("\tPower Pitch: ");
+	Serial.println(AGStatus.PowerPitch);
+
 #endif // DoDebug
 }

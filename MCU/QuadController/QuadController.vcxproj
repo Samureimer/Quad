@@ -47,10 +47,10 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\..\..\..\..\Program Files (x86)\Arduino\hardware\arduino\avr\libraries\SPI\src;$(ProjectDir)..\..\..\..\..\Documents\Arduino\libraries\RF24-master;$(ProjectDir)..\..\..\..\..\Documents\Arduino\libraries\RF24-master\utility;$(ProjectDir)..\..\..\..\..\..\..\Program Files (x86)\Arduino\libraries;$(ProjectDir)..\..\..\..\..\..\..\Program Files (x86)\Arduino\hardware\arduino\avr\libraries;$(ProjectDir)..\..\..\..\..\Documents\Arduino\libraries;$(ProjectDir)..\..\..\..\..\..\..\Program Files (x86)\Arduino\hardware\arduino\avr\cores\arduino;$(ProjectDir)..\..\..\..\..\..\..\Program Files (x86)\Arduino\hardware\arduino\avr\variants\mega;$(ProjectDir)..\QuadController;$(ProjectDir)..\..\..\..\..\..\..\Program Files (x86)\Arduino\hardware\tools\avr\avr\include\;$(ProjectDir)..\..\..\..\..\..\..\Program Files (x86)\Arduino\hardware\tools\avr\avr\include\avr\;$(ProjectDir)..\..\..\..\..\..\..\Program Files (x86)\Arduino\hardware\tools\avr\lib\gcc\avr\4.8.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Mark\Documents\Arduino\libraries\RF24-master;C:\Users\Mark\Documents\Arduino\libraries\RF24-master\utility;C:\Users\Mark\Documents\Arduino\hardware\Arduino_STM32\STM32F1\libraries\SPI\src;C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\Common7\IDE\Extensions\bjgs31r1.33a\Micro Platforms\visualmicro\ide\libraries;C:\Users\Mark\Documents\Arduino\hardware\Arduino_STM32\STM32F1\libraries;C:\Users\Mark\Documents\Arduino\libraries;C:\Users\Mark\Documents\Arduino\hardware\Arduino_STM32\STM32F1\cores\maple;C:\Users\Mark\Documents\Arduino\hardware\Arduino_STM32\STM32F1\cores\maple\avr;C:\Users\Mark\Documents\Arduino\hardware\Arduino_STM32\STM32F1\cores\maple\libmaple;C:\Users\Mark\Documents\Arduino\hardware\Arduino_STM32\STM32F1\cores\maple\stm32f1;C:\Users\Mark\Documents\Arduino\hardware\Arduino_STM32\STM32F1\variants\generic_stm32f103c;$(ProjectDir)..\QuadController;$(ProjectDir)..\Common;C:\Users\Mark\Documents\Arduino\hardware\Arduino_STM32\STM32F1\system\libmaple;C:\Users\Mark\Documents\Arduino\hardware\Arduino_STM32\STM32F1\system\libmaple\include;C:\Users\Mark\Documents\Arduino\hardware\Arduino_STM32\STM32F1\system\libmaple\stm32f1\include;C:\Users\Mark\Documents\Arduino\hardware\Arduino_STM32\STM32F1\system\libmaple\usb\stm32f1;C:\Users\Mark\Documents\Arduino\hardware\Arduino_STM32\STM32F1\system\libmaple\usb\usb_lib;C:\Users\Mark\AppData\Local\arduino15\packages\arduino\tools\arm-none-eabi-gcc\4.8.3-2014q1\4.8.3-2014q1\include;C:\Users\Mark\AppData\Local\arduino15\packages\arduino\tools\arm-none-eabi-gcc\4.8.3-2014q1\arm-none-eabi\include;C:\Users\Mark\AppData\Local\arduino15\packages\arduino\tools\arm-none-eabi-gcc\4.8.3-2014q1\lib\gcc\arm-none-eabi\4.8.3\include;C:\Users\Mark\AppData\Local\arduino15\packages\arduino\tools\arm-none-eabi-gcc\4.8.3-2014q1\lib\gcc\arm-none-eabi\4.8.3\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ForcedIncludeFiles>$(ProjectDir)__vm\.QuadController.vsarduino.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
-      <PreprocessorDefinitions>__AVR_ATmega2560__;F_CPU=16000000L;ARDUINO=10803;ARDUINO_AVR_MEGA2560;ARDUINO_ARCH_AVR;__cplusplus=201103L;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>DEBUG_LEVEL=DEBUG_NONE;BOARD_generic_stm32f103c;VECT_TAB_ADDR=0x8002000;ERROR_LED_PORT=GPIOB;ERROR_LED_PIN=1;F_CPU=72000000L;ARDUINO=10801;ARDUINO_GENERIC_STM32F103C;ARDUINO_ARCH_STM32F1;SERIAL_USB;GENERIC_BOOTLOADER;MCU_STM32F103C8;__STM32F1__;__cplusplus=201103L;GCC_VERSION=40803;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -83,7 +83,11 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Common\Structs.h" />
     <ClInclude Include="__vm\.QuadController.vsarduino.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\Common\Structs.cpp" />
   </ItemGroup>
   <PropertyGroup>
     <DebuggerFlavor>VisualMicroDebugger</DebuggerFlavor>

@@ -24,9 +24,15 @@
     <ClInclude Include="MotorPID.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Common\Structs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MotorPID.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Structs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
